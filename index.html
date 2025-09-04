@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pesquisa de Satisfação dos Funcionários</title>
+    <!-- FAVICON PERSONALIZADO -->
+    <link rel="icon" type="image/x-icon" href="https://i.imgur.com/80SsE11.png">
+    <link rel="shortcut icon" type="image/x-icon" href="https://i.imgur.com/80SsE11.png">
+    <link rel="apple-touch-icon" href="https://i.imgur.com/80SsE11.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <style>
+        :root {
+            --cor-primaria: #1e441e;
+            --cor-secundaria: #8FD694;
+            --cor-acento: #77AD78;
+            --cor-neutra: #6F8F72;
+            --cor-escura: #504B43;
+            --cor-clara: #F8FAF9;
+            --cor-branca: #FFFFFF;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--cor-clara);
+            line-height: 1.6;
+            color: var(--cor-escura);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .main-header {
+            background: linear-gradient(135deg, var(--cor-primaria) 0%, var(--cor-acento) 100%);
+            color: white;
+            padding: 30px 0;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            border-radius: 15px;
+        }
+
+        .nav-menu {
+            background: var(--cor-branca);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .nav-btn {
+            background: linear-gradient(135deg, var(--cor-primaria) 0%, var(--cor-acento) 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(125, 186, 132, 0.3);
+        }
+
+        .nav-btn.active {
+            background: linear-gradient(135deg, var(--cor-secundaria) 0%, var(--cor-acento) 100%);
+            box-shadow: 0 4px 10px rgba(143, 214, 148, 0.4);
+        }
+
+        .section {
+            background: var(--cor-branca);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .section h2 {
+            color: var(--cor-primaria);
+            margin-bottom: 25px;
+            font-size: 1.8em;
+            font-weight: 700;
+            border-bottom: 3px solid var(--cor-secundaria);
+            padding-bottom: 10px;
+        }
+        
+        .question-card {
+            background: #f8faf9;
+            border: 1px solid #e0e0e0;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            padding: 20px;
+            transition: border 0.3s ease;
+        }
+        
+        .question-title {
+            font-weight: 600;
+            color: var(--cor-escura);
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        
+        .radio-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            background-color: white;
+            padding: 10px 20px;
+            border: 2px solid #ddd;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .radio-group input[type="radio"] {
+            display: none;
+        }
+
+        .radio-group input[type="radio"]:checked + span {
+            color: var(--cor-branca);
+        }
+        
+        .radio-group label:has(input:checked) {
+             background-color: var(--cor-primaria);
+             border-color: var(--cor-acento);
+             color: white;
+        }
+        
+        .radio-group label:hover {
+            border-color: var(--cor-primaria);
+        }
+        
+        .form-group textarea, .form-group select, .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-group textarea:focus, .form-group select:focus, .form-group input:focus {
+            border-color: var(--cor-primaria);
+            outline: none;
+            box-shadow: 0 0 10px rgba(125, 186, 132, 0.2);
+        }
+        
+        .login-card {
+            background: linear-gradient(135deg, #f8faf9 0%, #e9f5ea 100%);
+            border: 2px solid var(--cor-secundaria);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            margin: 30px auto;
+            max-width: 600px;
+            box-shadow: 0 8px 25px rgba(30, 68, 30, 0.1);
+        }
+
+        .login-input {
+            width: 100%;
+            max-width: 400px;
+            padding: 15px 20px;
+            border: 2px solid var(--cor-primaria);
+            border-radius: 50px;
+            font-size: 16px;
+            text-align: center;
+            margin: 20px auto;
+            display: block;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, var(--cor-primaria) 0%, var(--cor-acento) 100%);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 5px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(125, 186, 132, 0.3);
+        }
+        
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            background: #fff;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .satisfaction-slider {
+            accent-color: var(--cor-primaria);
+        }
+        
+        .alert {
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid;
+        }
+
+        .alert-success {
+            background: rgba(143, 214, 148, 0.1);
+            border-color: var(--cor-secundaria);
+            color: var(--cor-acento);
+        }
+
+        .alert-info {
+            background: rgba(111, 143, 114, 0.1);
+            border-color: var(--cor-neutra);
+            color: var(--cor-escura);
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--cor-primaria);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #888;
+            background: none;
+            border: none;
+        }
+
+    </style>
+</head>
+<body>
+    <header class="main-header">
+        <div class="container">
+            <h1 class="text-2xl md:text-4xl font-bold"><i class="fas fa-smile-beam"></i> Pesquisa de Satisfação dos Funcionários</h1>
+        </div>
+    </header>
+
+    <div class="container">
+        <nav class="nav-menu">
+            <button class="nav-btn active" onclick="GG.showSection('home')"><i class="fas fa-home"></i> Home</button>
+            <button class="nav-btn" onclick="GG.acessoPesquisa()"><i class="fas fa-edit"></i> Responder Pesquisa</button>
+            <button class="nav-btn" onclick="GG.acessoHistorico()"><i class="fas fa-history"></i> Histórico</button>
+            <button class="nav-btn" onclick="GG.acessoRelatorios()"><i class="fas fa-chart-bar"></i> Relatórios</button>
+        </nav>
+
+        <!-- Seção Home -->
+        <section id="home" class="section active">
+            <h2><i class="fas fa-info-circle"></i> Bem-vindo(a) à Pesquisa de Satisfação</h2>
+            <div class="alert alert-success">
+                <h4 class="font-bold text-lg mb-2">Pesquisa Sigilosa</h4>
+                <p>Sua opinião é muito importante para nós! Esta pesquisa é <strong>totalmente sigilosa</strong> e tem como objetivo entender o grau de satisfação dos nossos funcionários com o ambiente de trabalho.</p>
+                <p class="mt-2">Por favor, seja honesto(a) em suas respostas. Elas nos ajudarão a construir um lugar cada vez melhor para se trabalhar.</p>
+            </div>
+             <div class="alert alert-info">
+                <h4 class="font-bold text-lg mb-2">Como funciona?</h4>
+                 <ul class="list-disc list-inside space-y-2">
+                    <li><strong>Responder Pesquisa:</strong> Clique em "Responder Pesquisa" para iniciar. Não é necessário senha.</li>
+                    <li><strong>Acesso Restrito:</strong> Para visualizar o Histórico e os Relatórios, você precisará da senha da sua filial.</li>
+                    <li><strong>Relatórios:</strong> Visualize gráficos e dados consolidados sobre o nível de satisfação geral, por filial e por função.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Seção da Pesquisa (sem login) -->
+        <section id="pesquisa" class="section">
+            <h2><i class="fas fa-edit"></i> Nível de Satisfação dos Funcionários</h2>
+            
+            <form id="formPesquisa">
+                <!-- Identificação do Colaborador -->
+                <div class="question-card">
+                    <p class="question-title">Por favor, informe sua matrícula para associar à filial correta.</p>
+                    <div class="form-group">
+                        <label for="matriculaColaborador" class="font-semibold">Sua Matrícula *</label>
+                        <input type="text" id="matriculaColaborador" required placeholder="Digite sua matrícula..." onchange="GG.buscarColaborador(this.value)">
+                        <input type="text" id="nomeColaborador" readonly placeholder="Seu nome aparecerá aqui..." class="mt-2 bg-gray-100">
+                        <input type="text" id="funcaoColaborador" readonly placeholder="Sua função aparecerá aqui..." class="mt-2 bg-gray-100">
+                    </div>
+                </div>
+
+                <!-- Satisfação Geral -->
+                <div class="question-card">
+                    <p class="question-title">0. Em uma escala de 0 a 10, qual o seu nível de satisfação geral com a empresa?</p>
+                    <div class="flex items-center gap-4">
+                        <span class="font-bold text-red-500">0</span>
+                        <input type="range" id="q0_satisfacao_geral" name="q0_satisfacao_geral" min="0" max="10" value="5" class="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer range-lg satisfaction-slider" oninput="satisfactionValue.textContent=this.value">
+                         <span class="font-bold text-green-500">10</span>
+                    </div>
+                    <p class="text-center text-2xl font-bold mt-2" style="color: var(--cor-primaria);"><span id="satisfactionValue">5</span></p>
+                </div>
+                
+                <!-- Pergunta 1 -->
+                <div class="question-card">
+                    <p class="question-title">1. Eu tenho o desejo de crescer profissionalmente nesta empresa?</p>
+                    <div class="radio-group">
+                        <label><input type="radio" name="q1_crescer" value="Sim"><span>Sim</span></label>
+                        <label><input type="radio" name="q1_crescer" value="Não"><span>Não</span></label>
+                    </div>
+                </div>
+
+                <!-- Pergunta 2 -->
+                <div class="question-card">
+                    <p class="question-title">2. Recebeu orientações/treinamentos para realizar suas atividades?</p>
+                    <div class="radio-group">
+                        <label><input type="radio" name="q2_treinamento" value="Sim"><span>Sim</span></label>
+                        <label><input type="radio" name="q2_treinamento" value="Não"><span>Não</span></label>
+                    </div>
+                </div>
+                
+                <!-- Pergunta 3 -->
+                <div class="question-card">
+                    <p class="question-title">3. Sou informado e orientado sobre meus erros/falhas que precisam ser corrigidas?</p>
+                    <div class="radio-group">
+                        <label><input type="radio" name="q3_feedback_erros" value="Sim"><span>Sim</span></label>
+                        <label><input type="radio" name="q3_feedback_erros" value="Não"><span>Não</span></label>
+                    </div>
+                </div>
+
+                <!-- Pergunta 4 -->
+                <div class="question-card">
+                    <p class="question-title">4. Sou reconhecido quando entrego além dos meus resultados?</p>
+                    <div class="radio-group">
+                        <label><input type="radio" name="q4_reconhecimento" value="Sim"><span>Sim</span></label>
+                        <label><input type="radio" name="q4_reconhecimento" value="Não"><span>Não</span></label>
+                    </div>
+                </div>
+
+                <!-- Pergunta 5 -->
+                <div class="question-card">
+                    <p class="question-title">5. Avalie os programas que temos hoje de benefício:</p>
+                    <div class="space-y-4">
+                        <div>
+                            <p class="font-semibold">5.1 Produtividade</p>
+                            <div class="radio-group mt-2">
+                                <label><input type="radio" name="q5_1_produtividade" value="Ruim"><span>Ruim</span></label>
+                                <label><input type="radio" name="q5_1_produtividade" value="Bom"><span>Bom</span></label>
+                                <label><input type="radio" name="q5_1_produtividade" value="Ótimo"><span>Ótimo</span></label>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="font-semibold">5.2 Assiduidade</p>
+                            <div class="radio-group mt-2">
+                                <label><input type="radio" name="q5_2_assiduidade" value="Ruim"><span>Ruim</span></label>
+                                <label><input type="radio" name="q5_2_assiduidade" value="Bom"><span>Bom</span></label>
+                                <label><input type="radio" name="q5_2_assiduidade" value="Ótimo"><span>Ótimo</span></label>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="font-semibold">5.3 Cartão Vuon</p>
+                            <div class="radio-group mt-2">
+                                <label><input type="radio" name="q5_3_cartao_vuon" value="Ruim"><span>Ruim</span></label>
+                                <label><input type="radio" name="q5_3_cartao_vuon" value="Bom"><span>Bom</span></label>
+                                <label><input type="radio" name="q5_3_cartao_vuon" value="Ótimo"><span>Ótimo</span></label>
+                                <label><input type="radio" name="q5_3_cartao_vuon" value="Não utilizo"><span>Não utilizo</span></label>
+                            </div>
+                        </div>
+                         <div>
+                            <p class="font-semibold">5.4 Refeitório</p>
+                            <div class="radio-group mt-2">
+                                <label><input type="radio" name="q5_4_refeitorio" value="Ruim"><span>Ruim</span></label>
+                                <label><input type="radio" name="q5_4_refeitorio" value="Bom"><span>Bom</span></label>
+                                <label><input type="radio" name="q5_4_refeitorio" value="Ótimo"><span>Ótimo</span></label>
+                                <label><input type="radio" name="q5_4_refeitorio" value="Não utilizo"><span>Não utilizo</span></label>
+                            </div>
+                        </div>
+                         <div>
+                            <p class="font-semibold">5.5 Área de descanso</p>
+                            <div class="radio-group mt-2">
+                                <label><input type="radio" name="q5_5_descanso" value="Ruim"><span>Ruim</span></label>
+                                <label><input type="radio" name="q5_5_descanso" value="Bom"><span>Bom</span></label>
+                                <label><input type="radio" name="q5_5_descanso" value="Ótimo"><span>Ótimo</span></label>
+                                <label><input type="radio" name="q5_5_descanso" value="Não utilizo"><span>Não utilizo</span></label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pergunta 6 -->
+                <div class="question-card">
+                    <p class="question-title">6. Eu tenho conhecimento sobre as minhas metas individuais?</p>
+                    <div class="radio-group">
+                        <label><input type="radio" name="q6_metas" value="Sim"><span>Sim</span></label>
+                        <label><input type="radio" name="q6_metas" value="Não"><span>Não</span></label>
+                    </div>
+                </div>
+                
+                <!-- Pergunta 7 -->
+                <div class="question-card">
+                    <p class="question-title">7. Sinto que posso contar com minha liderança quando tenho um problema?</p>
+                    <div class="radio-group">
+                        <label><input type="radio" name="q7_apoio_lideranca" value="Sim"><span>Sim</span></label>
+                        <label><input type="radio" name="q7_apoio_lideranca" value="Não"><span>Não</span></label>
+                    </div>
+                </div>
+                
+                <!-- Pergunta 8 -->
+                <div class="question-card">
+                    <p class="question-title">8. Minha liderança está presente e acompanha o dia a dia da operação?</p>
+                    <div class="radio-group">
+                        <label><input type="radio" name="q8_presenca_lideranca" value="Sim"><span>Sim</span></label>
+                        <label><input type="radio" name="q8_presenca_lideranca" value="Não"><span>Não</span></label>
+                    </div>
+                </div>
+                
+                <!-- Pergunta 9 -->
+                <div class="question-card">
+                    <p class="question-title">9. Como você avalia as ferramentas de trabalho? (Ex: Coletores, Empilhadeiras, Computadores, etc.)</p>
+                    <div class="radio-group">
+                        <label><input type="radio" name="q9_ferramentas" value="Ruim"><span>Ruim</span></label>
+                        <label><input type="radio" name="q9_ferramentas" value="Bom"><span>Bom</span></label>
+                        <label><input type="radio" name="q9_ferramentas" value="Ótimo"><span>Ótimo</span></label>
+                    </div>
+                </div>
+                
+                <!-- Pergunta 10 -->
+                <div class="question-card">
+                    <p class="question-title">10. Deixe seu comentário aberto sobre quais melhorias você gostaria no seu ambiente de trabalho:</p>
+                    <div class="form-group">
+                        <textarea id="q10_comentario" name="q10_comentario" rows="4" placeholder="Sua opinião é muito valiosa..."></textarea>
+                    </div>
+                </div>
+
+                <div class="text-center mt-8">
+                    <button type="button" id="btnEnviarPesquisa" class="btn btn-success text-lg" onclick="GG.salvarPesquisa()">
+                        <span class="btn-text"><i class="fas fa-paper-plane"></i> Enviar Respostas</span>
+                        <span class="btn-spinner" style="display: none;"><div class="spinner"></div></span>
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Seção de Acesso ao Histórico -->
+        <section id="loginHistorico" class="section">
+             <h2><i class="fas fa-key"></i> Acesso ao Histórico</h2>
+            <div class="login-card">
+                <h3>Digite a Senha da sua Filial</h3>
+                <input type="password" id="senhaHistorico" class="login-input" placeholder="Sua senha..." onkeypress="GG.verificarEnter(event, 'historico')">
+                <button class="btn btn-success" onclick="GG.validarSenha('historico')"><i class="fas fa-unlock"></i> Acessar Histórico</button>
+            </div>
+        </section>
+
+        <!-- Seção Histórico -->
+        <section id="historico" class="section">
+            <h2><i class="fas fa-history"></i> Histórico de Pesquisas</h2>
+             <div id="historicoAccessStatus" class="access-status mb-4" style="display: none;"></div>
+            <div id="historicoContainer">
+                 <p class="text-center p-8">Carregando histórico...</p>
+            </div>
+        </section>
+
+        <!-- Seção de Acesso aos Relatórios -->
+        <section id="loginRelatorios" class="section">
+             <h2><i class="fas fa-key"></i> Acesso aos Relatórios</h2>
+            <div class="login-card">
+                <h3>Digite a Senha da sua Filial</h3>
+                <input type="password" id="senhaRelatorios" class="login-input" placeholder="Sua senha..." onkeypress="GG.verificarEnter(event, 'relatorios')">
+                <button class="btn btn-success" onclick="GG.validarSenha('relatorios')"><i class="fas fa-unlock"></i> Acessar Relatórios</button>
+            </div>
+        </section>
+
+        <!-- Seção Relatórios -->
+        <section id="relatorios" class="section">
+            <h2><i class="fas fa-chart-bar"></i> Relatórios de Satisfação</h2>
+            <div id="relatoriosAccessStatus" class="access-status mb-4" style="display: none;"></div>
+            
+            <div id="relatoriosContainer">
+                <!-- Conteúdo gerado dinamicamente -->
+            </div>
+        </section>
+
+    </div>
+
+    <footer style="background: var(--cor-primaria); color: white; text-align: center; padding: 15px; margin-top: 50px;">
+        <div class="container">
+            <p class="text-xs opacity-70">
+                Desenvolvido por Juliano Patrick | julianocorrea@bateforte.com.br | © 2025
+            </p>
+        </div>
+    </footer>
+    
+    <div id="modalDetalhes" class="modal-overlay" onclick="GG.fecharModalDetalhes(event)">
+        <div class="modal-content">
+            <button class="modal-close" onclick="GG.fecharModalDetalhes()">&times;</button>
+            <div id="modalDetalhesConteudo">
+                <!-- Details will be injected here -->
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+    const GG = {
+        SUPABASE_URL: 'https://mtqwqwpqkzrbkxxkaffq.supabase.co',
+        SUPABASE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10cXdxd3Bxa3pyYmt4eGthZmZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUyMTIxMjgsImV4cCI6MjA3MDc4ODEyOH0.MKaYUE_wumkdkyuoWt5yIY2GhEDRsqsYMfA0oot2bvY',
+        
+        // Armazenamento das instâncias dos gráficos para destruí-las depois
+        chartGeralInstance: null,
+        chartFilialInstance: null,
+        chartFuncaoInstance: null,
+        chartInstances: {}, // Para os gráficos por pergunta
+
+        dados: {
+            pesquisas: [],
+            respostas: [],
+            colaboradores: {},
+            dadosCarregados: false
+        },
+        
+        acesso: { tipo: null, filial: null },
+
+        SENHAS_FILIAIS: {
+            'GG74301': { filial: '743', regional: 'MS' }, 'GG26402': { filial: '264', regional: 'SC' }, 'GG75303': { filial: '753', regional: 'MT' },
+            'GG36404': { filial: '364', regional: 'DF' }, 'GG71305': { filial: '713', regional: 'SP' }, 'GG46806': { filial: '468', regional: 'MT' },
+            'GG89207': { filial: '892', regional: 'SP' }, 'GG72308': { filial: '723', regional: 'SP' }, 'GG23009': { filial: '230', regional: 'SP' },
+            'GG77310': { filial: '773', regional: 'RS' }, 'GG47311': { filial: '473', regional: 'MT' }, 'GG16712': { filial: '167', regional: 'MS' },
+            'GG02013': { filial: '20', regional: 'AGP' }
+        },
+
+        SENHAS_ESPECIAIS: {
+            'GGMASTER': { tipo: 'master' }, 'GGMASTERJP': { tipo: 'admin' }
+        },
+
+        DEFINICAO_PERGUNTAS: {
+            'q1_crescer': { label: 'Desejo de crescer' }, 'q2_treinamento': { label: 'Recebeu treinamento' },
+            'q3_feedback_erros': { label: 'Feedback sobre erros' }, 'q4_reconhecimento': { label: 'Reconhecimento' },
+            'q5_1_produtividade': { label: 'Benefício: Produtividade' }, 'q5_2_assiduidade': { label: 'Benefício: Assiduidade' },
+            'q5_3_cartao_vuon': { label: 'Benefício: Cartão Vuon' }, 'q5_4_refeitorio': { label: 'Benefício: Refeitório' },
+            'q5_5_descanso': { label: 'Benefício: Área de Descanso' }, 'q6_metas': { label: 'Conhecimento das metas' },
+            'q7_apoio_lideranca': { label: 'Apoio da liderança' }, 'q8_presenca_lideranca': { label: 'Presença da liderança' },
+            'q9_ferramentas': { label: 'Ferramentas de trabalho' },
+        },
+        
+        async buscarTodosRegistros(tabela) {
+            console.log(`Buscando TODOS os registros de: ${tabela}`);
+            let todosRegistros = [];
+            let offset = 0;
+            const limit = 1000;
+            let hasMore = true;
+
+            while(hasMore) {
+                try {
+                    const url = `${this.SUPABASE_URL}/rest/v1/${tabela}?select=*&offset=${offset}&limit=${limit}`;
+                    const response = await fetch(url, { headers: { 'apikey': this.SUPABASE_KEY, 'Authorization': `Bearer ${this.SUPABASE_KEY}` } });
+
+                    if (!response.ok) {
+                        console.error(`Erro na resposta do Supabase para a tabela ${tabela}:`, response);
+                        throw new Error(`Erro HTTP ${response.status} ao buscar na tabela ${tabela}`);
+                    }
+                    
+                    const registros = await response.json();
+                    todosRegistros = todosRegistros.concat(registros);
+
+                    if (registros.length < limit) {
+                        hasMore = false;
+                    } else {
+                        offset += limit;
+                        console.log(`Carregado ${registros.length} de ${tabela}, buscando mais...`);
+                    }
+
+                } catch(e) {
+                     alert(`Falha ao carregar dados da tabela "${tabela}". Verifique se a tabela existe no Supabase e se as permissões (RLS) estão corretas.`);
+                     throw e;
+                }
+            }
+            console.log(`Carregamento finalizado para ${tabela}. Total de ${todosRegistros.length} registros.`);
+            return todosRegistros;
+        },
+
+        async inserirNoSupabase(tabela, dados) {
+            const response = await fetch(`${this.SUPABASE_URL}/rest/v1/${tabela}`, {
+                method: 'POST',
+                headers: { 'apikey': this.SUPABASE_KEY, 'Authorization': `Bearer ${this.SUPABASE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+                body: JSON.stringify(dados)
+            });
+            if (!response.ok) throw new Error(await response.text());
+            return await response.json();
+        },
+        
+        showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(sectionId)?.classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                const btnAction = btn.getAttribute('onclick').toLowerCase();
+                const isForPesquisa = sectionId === 'pesquisa' && btnAction.includes('pesquisa');
+                const isForOthers = btnAction.includes(sectionId.replace('login', '').toLowerCase());
+                btn.classList.toggle('active', isForPesquisa || isForOthers);
+            });
+            if (sectionId === 'relatorios' && this.acesso.tipo) this.gerarRelatorios();
+            if (sectionId === 'historico' && this.acesso.tipo) this.carregarHistorico();
+        },
+
+        acessoPesquisa() { this.showSection('pesquisa'); },
+        acessoHistorico() { this.showSection('loginHistorico'); },
+        acessoRelatorios() { this.showSection('loginRelatorios'); },
+
+        verificarEnter(e, tipo) { if (e.key === 'Enter') this.validarSenha(tipo); },
+
+        validarSenha(tipo) {
+            const senhaEl = document.getElementById(`senha${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`);
+            const senha = senhaEl.value.trim().toUpperCase();
+            if (!senha) return alert('Por favor, digite uma senha.');
+
+            let acessoConcedido = false;
+            if (this.SENHAS_ESPECIAIS[senha]) {
+                this.acesso = { tipo: this.SENHAS_ESPECIAIS[senha].tipo, filial: 'Todas' };
+                acessoConcedido = true;
+            } else if (this.SENHAS_FILIAIS[senha]) {
+                this.acesso = { tipo: 'filial', filial: this.SENHAS_FILIAIS[senha].filial };
+                acessoConcedido = true;
+            }
+
+            if (acessoConcedido) {
+                this.exibirStatusAcesso(tipo);
+                this.showSection(tipo);
+                senhaEl.value = '';
+            } else {
+                alert('Senha inválida!');
+            }
+        },
+        
+        exibirStatusAcesso(secao) {
+            const statusEl = document.getElementById(`${secao}AccessStatus`);
+            if (statusEl) {
+                statusEl.textContent = `Acesso liberado: ${this.acesso.tipo === 'filial' ? `Filial ${this.acesso.filial}`: 'Acesso Master'}`;
+                statusEl.style.display = 'block';
+            }
+        },
+
+        logout() {
+            this.acesso = { tipo: null, filial: null };
+            document.querySelectorAll('.access-status').forEach(el => el.style.display = 'none');
+            this.showSection('home');
+        },
+
+        async buscarColaborador(matricula) {
+            const nomeEl = document.getElementById('nomeColaborador');
+            const funcaoEl = document.getElementById('funcaoColaborador');
+            if (!matricula) {
+                nomeEl.value = '';
+                funcaoEl.value = '';
+                return;
+            }
+            const colaborador = this.dados.colaboradores[matricula.trim()];
+            nomeEl.value = colaborador ? colaborador.nome : 'Matrícula não encontrada.';
+            funcaoEl.value = colaborador ? (colaborador.funcao || 'Função não cadastrada') : '';
+        },
+
+        async salvarPesquisa() {
+            const btn = document.getElementById('btnEnviarPesquisa');
+            const btnText = btn.querySelector('.btn-text');
+            const btnSpinner = btn.querySelector('.btn-spinner');
+
+            btn.disabled = true;
+            btnText.style.display = 'none';
+            btnSpinner.style.display = 'inline-block';
+
+            try {
+                const form = document.getElementById('formPesquisa');
+                const matricula = document.getElementById('matriculaColaborador').value.trim();
+                
+                if (!matricula || !this.dados.colaboradores[matricula]) {
+                    throw new Error('Por favor, insira uma matrícula válida.');
+                }
+
+                const pesquisaData = {
+                    matricula_colaborador: matricula,
+                    filial: this.dados.colaboradores[matricula].filial,
+                    satisfacao_geral: parseInt(document.getElementById('q0_satisfacao_geral').value),
+                    comentario_melhorias: document.getElementById('q10_comentario').value
+                };
+
+                const resultadoPesquisa = await this.inserirNoSupabase('pesquisas', pesquisaData);
+                if (!resultadoPesquisa || resultadoPesquisa.length === 0) {
+                     throw new Error('Não foi possível obter o ID da pesquisa salva.');
+                }
+                const pesquisaId = resultadoPesquisa[0].id;
+                
+                const respostas = [];
+                for (const key in this.DEFINICAO_PERGUNTAS) {
+                    const checkedRadio = form.querySelector(`input[name="${key}"]:checked`);
+                    const value = checkedRadio ? checkedRadio.value : null;
+                    if (!value) {
+                        const questionCard = form.querySelector(`input[name="${key}"]`).closest('.question-card');
+                        if (questionCard) {
+                            questionCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            questionCard.style.border = '2px solid red';
+                            setTimeout(() => { questionCard.style.border = '1px solid #e0e0e0'; }, 3000);
+                        }
+                        throw new Error(`Por favor, responda a pergunta: "${this.DEFINICAO_PERGUNTAS[key].label}"`);
+                    }
+                    respostas.push({ pesquisa_id: pesquisaId, pergunta_id: key, resposta: value });
+                }
+
+                await this.inserirNoSupabase('pesquisa_respostas', respostas);
+                alert('Pesquisa enviada com sucesso! Agradecemos sua participação.');
+                form.reset();
+                document.getElementById('satisfactionValue').textContent = '5';
+                document.getElementById('nomeColaborador').value = '';
+                document.getElementById('funcaoColaborador').value = '';
+                this.showSection('home');
+                this.dados.dadosCarregados = false;
+            } catch (error) {
+                console.error('Erro ao salvar pesquisa:', error);
+                alert(`Ocorreu um erro: ${error.message}`);
+            } finally {
+                btn.disabled = false;
+                btnText.style.display = 'inline-block';
+                btnSpinner.style.display = 'none';
+            }
+        },
+
+        processarDadosCompletos() {
+            if (!this.dados.pesquisas || !this.dados.respostas) return [];
+            
+            const respostasMap = {};
+            this.dados.respostas.forEach(r => {
+                if (!respostasMap[r.pesquisa_id]) respostasMap[r.pesquisa_id] = {};
+                respostasMap[r.pesquisa_id][r.pergunta_id] = r.resposta;
+            });
+
+            return this.dados.pesquisas.map(p => ({
+                ...p,
+                ...respostasMap[p.id]
+            }));
+        },
+
+        async carregarHistorico() {
+            const container = document.getElementById('historicoContainer');
+            container.innerHTML = `<p class="text-center p-8">Carregando...</p>`;
+            if (!this.dados.dadosCarregados) await this.carregarTodosOsDados();
+            
+            let pesquisas = this.dados.pesquisas;
+            if (this.acesso.tipo === 'filial') {
+                pesquisas = pesquisas.filter(p => p.filial === this.acesso.filial);
+            }
+
+            if (pesquisas.length === 0) {
+                container.innerHTML = `<p class="text-center p-8">Nenhuma pesquisa encontrada.</p>`;
+                return;
+            }
+
+            const tableHtml = `<div class="overflow-x-auto"><table class="w-full text-sm text-left text-gray-500">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50"><tr>
+                    <th class="px-6 py-3">Data</th><th class="px-6 py-3">Colaborador</th>
+                    <th class="px-6 py-3">Filial</th><th class="px-6 py-3">Satisfação</th>
+                    <th class="px-6 py-3">Ações</th>
+                </tr></thead><tbody>
+                ${pesquisas.map(p => `
+                    <tr class="bg-white border-b">
+                        <td class="px-6 py-4">${new Date(p.created_at).toLocaleDateString('pt-BR')}</td>
+                        <td class="px-6 py-4">${this.dados.colaboradores[p.matricula_colaborador]?.nome || p.matricula_colaborador}</td>
+                        <td class="px-6 py-4">${p.filial}</td>
+                        <td class="px-6 py-4 font-bold">${p.satisfacao_geral}/10</td>
+                        <td class="px-6 py-4">
+                            <button class="btn btn-sm" onclick="GG.verDetalhesPesquisa(${p.id})">Detalhes</button>
+                        </td>
+                    </tr>`).join('')}
+            </tbody></table></div>`;
+            container.innerHTML = tableHtml;
+        },
+        
+        async gerarRelatorios() {
+            if (this.chartGeralInstance) this.chartGeralInstance.destroy();
+            if (this.chartFilialInstance) this.chartFilialInstance.destroy();
+            if (this.chartFuncaoInstance) this.chartFuncaoInstance.destroy();
+            for (const key in this.chartInstances) {
+                if(this.chartInstances[key]) this.chartInstances[key].destroy();
+            }
+            this.chartInstances = {};
+
+            const container = document.getElementById('relatoriosContainer');
+            if (!this.dados.dadosCarregados) await this.carregarTodosOsDados();
+            
+            let pesquisasCompletas = this.processarDadosCompletos();
+            if (this.acesso.tipo === 'filial') {
+                pesquisasCompletas = pesquisasCompletas.filter(p => p.filial === this.acesso.filial);
+            }
+
+            if (pesquisasCompletas.length === 0) {
+                container.innerHTML = `<p class="text-center p-8">Nenhum dado para gerar relatórios.</p>`;
+                return;
+            }
+            
+            container.innerHTML = `
+                <div class="space-y-12">
+                    <div>
+                        <h3 class="text-2xl font-bold text-center mb-4 text-gray-800">Visão Geral da Satisfação</h3>
+                        <div class="chart-container mx-auto" style="max-width: 600px; min-height: 400px;">
+                            <canvas id="chartGeral"></canvas>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-center mb-4 text-gray-800 border-t pt-8">Satisfação por Segmento</h3>
+                        <div class="charts-grid">
+                            <div class="chart-container" id="chartFilialContainer">
+                                 <canvas id="chartFilial"></canvas>
+                            </div>
+                            <div class="chart-container" id="chartFuncaoContainer">
+                                <canvas id="chartFuncao"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-center mb-4 text-gray-800 border-t pt-8">Análise por Pergunta</h3>
+                        <div id="chartsPerguntasContainer" class="charts-grid"></div>
+                    </div>
+                </div>`;
+
+            this.gerarGraficoSatisfacaoGeral(pesquisasCompletas);
+            this.gerarGraficoSatisfacaoPorFilial(pesquisasCompletas);
+            this.gerarGraficoSatisfacaoPorFuncao(pesquisasCompletas);
+            this.gerarGraficosPorPergunta(pesquisasCompletas);
+        },
+        
+        async carregarTodosOsDados() {
+            try {
+                const [pesquisas, respostas, colaboradores] = await Promise.all([
+                    this.buscarTodosRegistros('pesquisas'),
+                    this.buscarTodosRegistros('pesquisa_respostas'),
+                    this.buscarTodosRegistros('colaboradores')
+                ]);
+                this.dados.pesquisas = pesquisas;
+                this.dados.respostas = respostas;
+                this.dados.colaboradores = colaboradores.reduce((acc, col) => {
+                    acc[col.matricula] = col;
+                    return acc;
+                }, {});
+                this.dados.dadosCarregados = true;
+                console.log('Todos os dados foram carregados e processados.');
+            } catch(e) {
+                console.error("Falha crítica ao carregar dados:", e);
+            }
+        },
+
+        async init() {
+            console.log('🚀 Iniciando Sistema...');
+            Chart.register(ChartDataLabels); // Registrar plugin de labels
+            await this.carregarTodosOsDados();
+        },
+        
+        gerarGraficoSatisfacaoGeral(dados) {
+            const ctx = document.getElementById('chartGeral')?.getContext('2d');
+            if (!ctx) return;
+            const mediaGeral = dados.reduce((acc, p) => acc + p.satisfacao_geral, 0) / dados.length;
+            this.chartGeralInstance = new Chart(ctx, { type: 'bar', data: { labels: ['Média Geral'], datasets: [{ label: 'Pontuação Média', data: [mediaGeral.toFixed(2)], backgroundColor: [ 'var(--cor-acento)'] }] }, options: { scales: { y: { beginAtZero: true, max: 10 } }, responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Satisfação Geral', font: { size: 16 } }, datalabels: { color: '#fff', font: { weight: 'bold' } } } } });
+        },
+
+        gerarGraficoSatisfacaoPorFilial(dados) {
+            const container = document.getElementById('chartFilialContainer');
+            const ctx = document.getElementById('chartFilial')?.getContext('2d');
+            if (!ctx || this.acesso.tipo === 'filial') { if (container) container.style.display = 'none'; return; }
+            
+            const porFilial = {};
+            dados.forEach(p => {
+                if (!porFilial[p.filial]) porFilial[p.filial] = { soma: 0, total: 0 };
+                porFilial[p.filial].soma += p.satisfacao_geral;
+                porFilial[p.filial].total++;
+            });
+            const labels = Object.keys(porFilial);
+            const medias = labels.map(f => (porFilial[f].soma / porFilial[f].total).toFixed(2));
+            const chartColors = ['#1e441e', '#8FD694', '#77AD78', '#6F8F72', '#504B43'];
+            const backgroundColors = labels.map((_, i) => chartColors[i % chartColors.length]);
+            
+            const numItems = labels.length;
+            const baseHeight = 150;
+            const heightPerItem = 30;
+            container.style.minHeight = `${baseHeight + (numItems * heightPerItem)}px`;
+
+            this.chartFilialInstance = new Chart(ctx, { type: 'bar', data: { labels, datasets: [{ label: 'Média de Satisfação', data: medias, backgroundColor: backgroundColors }] }, options: { scales: { x: { beginAtZero: true, max: 10 } }, indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, title: { display: true, text: 'Satisfação por Filial', font: { size: 16 } }, datalabels: { anchor: 'end', align: 'end', color: '#333', font: { weight: 'bold'} } } } });
+        },
+
+        gerarGraficoSatisfacaoPorFuncao(dados) {
+            const container = document.getElementById('chartFuncaoContainer');
+            const ctx = document.getElementById('chartFuncao')?.getContext('2d');
+            if (!ctx) return;
+            
+            const porFuncao = {};
+            dados.forEach(p => {
+                const colaborador = this.dados.colaboradores[p.matricula_colaborador];
+                const funcao = colaborador ? (colaborador.funcao || 'Não Identificada') : 'Não Identificada';
+                
+                if (!porFuncao[funcao]) porFuncao[funcao] = { soma: 0, total: 0 };
+                porFuncao[funcao].soma += p.satisfacao_geral;
+                porFuncao[funcao].total++;
+            });
+
+            const labels = Object.keys(porFuncao);
+            const medias = labels.map(f => (porFuncao[f].soma / porFuncao[f].total).toFixed(2));
+            const chartColors = ['#1e441e', '#8FD694', '#77AD78', '#6F8F72', '#504B43'];
+            const backgroundColors = labels.map((_, i) => chartColors[i % chartColors.length]);
+            
+            const numItems = labels.length;
+            const baseHeight = 150;
+            const heightPerItem = 30;
+            container.style.minHeight = `${baseHeight + (numItems * heightPerItem)}px`;
+
+            this.chartFuncaoInstance = new Chart(ctx, { 
+                type: 'bar', 
+                data: { 
+                    labels, 
+                    datasets: [{ 
+                        label: 'Média de Satisfação', 
+                        data: medias, 
+                        backgroundColor: backgroundColors 
+                    }] 
+                }, 
+                options: { 
+                    scales: { x: { beginAtZero: true, max: 10 } }, 
+                    indexAxis: 'y', 
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false }, title: { display: true, text: 'Satisfação por Função', font: { size: 16 } }, datalabels: { anchor: 'end', align: 'end', color: '#333', font: { weight: 'bold'} } }
+                } 
+            });
+        },
+        gerarGraficosPorPergunta(dados) {
+            const container = document.getElementById('chartsPerguntasContainer');
+            container.innerHTML = '';
+            const chartColors = ['#1e441e', '#8FD694', '#77AD78', '#6F8F72', '#504B43'];
+            
+            for (const key in this.DEFINICAO_PERGUNTAS) {
+                const pergunta = this.DEFINICAO_PERGUNTAS[key];
+                const chartDiv = document.createElement('div');
+                chartDiv.className = 'chart-container';
+                const canvasId = `chart_${key}`;
+                chartDiv.innerHTML = `<canvas id="${canvasId}"></canvas>`;
+                container.appendChild(chartDiv);
+                const ctx = document.getElementById(canvasId).getContext('2d');
+                const contagem = {};
+                dados.forEach(p => {
+                    const resposta = p[key];
+                    if(resposta) contagem[resposta] = (contagem[resposta] || 0) + 1;
+                });
+                
+                this.chartInstances[canvasId] = new Chart(ctx, { type: 'pie', data: { labels: Object.keys(contagem), datasets: [{ data: Object.values(contagem), backgroundColor: chartColors }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: pergunta.label, font: {size: 14} }, datalabels: { formatter: (value, ctx) => { let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0); let percentage = (value * 100 / sum).toFixed(1) + "%"; return percentage; }, color: '#fff', font: { weight: 'bold' } } } } });
+            }
+        },
+
+        verDetalhesPesquisa(pesquisaId) {
+            const modal = document.getElementById('modalDetalhes');
+            const conteudo = document.getElementById('modalDetalhesConteudo');
+
+            const pesquisa = this.dados.pesquisas.find(p => p.id === pesquisaId);
+            const respostas = this.dados.respostas.filter(r => r.pesquisa_id === pesquisaId);
+
+            if (!pesquisa) {
+                alert('Erro: Pesquisa não encontrada.');
+                return;
+            }
+
+            let html = `<h2 class="text-2xl font-bold mb-4" style="color: var(--cor-primaria);">Detalhes da Pesquisa</h2>`;
+            html += `<div class="grid grid-cols-2 gap-4 mb-6 text-sm">
+                        <div><strong>Colaborador:</strong> ${this.dados.colaboradores[pesquisa.matricula_colaborador]?.nome || 'N/A'}</div>
+                        <div><strong>Matrícula:</strong> ${pesquisa.matricula_colaborador}</div>
+                        <div><strong>Filial:</strong> ${pesquisa.filial}</div>
+                        <div><strong>Data:</strong> ${new Date(pesquisa.created_at).toLocaleString('pt-BR')}</div>
+                     </div>`;
+            
+            html += `<div class="question-card !p-4 mb-4">
+                        <p class="question-title">Satisfação Geral: <strong class="text-xl" style="color: var(--cor-primaria);">${pesquisa.satisfacao_geral} / 10</strong></p>
+                     </div>`;
+
+            html += `<h3 class="text-xl font-bold mt-6 mb-3" style="color: var(--cor-primaria);">Respostas Detalhadas</h3>`;
+            
+            const respostasMap = respostas.reduce((acc, r) => {
+                acc[r.pergunta_id] = r.resposta;
+                return acc;
+            }, {});
+
+            for (const key in this.DEFINICAO_PERGUNTAS) {
+                const pergunta = this.DEFINICAO_PERGUNTAS[key];
+                const resposta = respostasMap[key] || 'Não respondida';
+                html += `<div class="border-b py-3">
+                            <p class="font-semibold text-gray-600">${pergunta.label}</p>
+                            <p class="text-lg font-bold" style="color: var(--cor-escura);">${resposta}</p>
+                         </div>`;
+            }
+            
+            if (pesquisa.comentario_melhorias) {
+                html += `<div class="mt-6">
+                            <p class="font-semibold text-gray-600">Comentário sobre melhorias:</p>
+                            <p class="mt-1 p-3 bg-gray-100 rounded-md">${pesquisa.comentario_melhorias}</p>
+                         </div>`;
+            }
+
+            conteudo.innerHTML = html;
+            modal.style.display = 'flex';
+        },
+
+        fecharModalDetalhes(event) {
+            const modal = document.getElementById('modalDetalhes');
+            if (event && event.target !== modal && event.target.closest('.modal-content')) {
+                return;
+            }
+            modal.style.display = 'none';
+            document.getElementById('modalDetalhesConteudo').innerHTML = '';
+        }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => GG.init());
+    window.GG = GG;
+    </script>
+</body>
+</html>
+
