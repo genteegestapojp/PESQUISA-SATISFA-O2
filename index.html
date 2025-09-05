@@ -4,10 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pesquisa de Satisfação dos Funcionários</title>
-    <!-- FAVICON PERSONALIZADO -->
-    <link rel="icon" type="image/x-icon" href="https://i.imgur.com/80SsE11.png">
-    <link rel="shortcut icon" type="image/x-icon" href="https://i.imgur.com/80SsE11.png">
-    <link rel="apple-touch-icon" href="https://i.imgur.com/80SsE11.png">
+    <!-- FAVICON PERSONALIZADO DO REPOSITÓRIO -->
+    <link rel="icon" type="image/x-icon" href="https://cdn.jsdelivr.net/gh/genteegestaopop/PESQUISA-SATISFA-O2@main/image.png">
+    <link rel="shortcut icon" type="image/x-icon" href="https://cdn.jsdelivr.net/gh/genteegestaopop/PESQUISA-SATISFA-O2@main/image.png">
+    <link rel="apple-touch-icon" href="https://cdn.jsdelivr.net/gh/genteegestaopop/PESQUISA-SATISFA-O2@main/image.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -360,12 +360,20 @@
             <form id="formPesquisa">
                 <!-- Identificação do Colaborador -->
                 <div class="question-card">
-                    <p class="question-title">Por favor, informe sua matrícula para associar à filial correta.</p>
-                    <div class="form-group">
-                        <label for="matriculaColaborador" class="font-semibold">Sua Matrícula *</label>
-                        <input type="text" id="matriculaColaborador" required placeholder="Digite sua matrícula..." onchange="GG.buscarColaborador(this.value)">
-                        <input type="text" id="nomeColaborador" readonly placeholder="Seu nome aparecerá aqui..." class="mt-2 bg-gray-100">
-                        <input type="text" id="funcaoColaborador" readonly placeholder="Sua função aparecerá aqui..." class="mt-2 bg-gray-100">
+                    <p class="question-title">Por favor, informe sua Filial e Seção.</p>
+                     <div class="grid md:grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label for="filialPesquisa" class="font-semibold">Sua Filial *</label>
+                            <select id="filialPesquisa" required>
+                                <option value="">Carregando filiais...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="secaoPesquisa" class="font-semibold">Sua Seção *</label>
+                            <select id="secaoPesquisa" required>
+                                <option value="">Selecione sua seção...</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
@@ -599,6 +607,17 @@
         
         acesso: { tipo: null, filial: null },
 
+        SECOES: [
+            "APOIO - JOVEM APRENDIZ", "ABASTECIMENTO (OPERACAO)", "GENTE E GESTAO", "OPERACIONAL (OPERACAO)", 
+            "TRANSPORTE (OPERACAO)", "FINANCEIRO (ADM)", "PREVENCAO DE PERDAS (ADM)", "EXPEDICAO (OPERACAO)",
+            "SEPARACAO (OPERACAO)", "RECEBIMENTO (OPERACAO)", "COZINHA", "LIMPEZA E CONSERVACAO", "MANUTENCAO (ADM)",
+            "SEGURANCA/PORTARIA (ADM)", "DIVISAO PERLOG (OPERACOES)", "PREVENCAO PERLOG (OPERACAO)", 
+            "OPERACAO DE ALIMENTOS (OP. PERLOG)", "SAC", "F.L.V. (OPERACAO)", "EXPANSAO", "INFORMATICA (ADM)",
+            "MOTORISTAS (OPERACAO)", "SAUDE E SEGURANCA NO TRABALHO", "CESTA BASICA (OPERACAO)", "SORTER (OPERACAO)",
+            "NOVOS NEGOCIOS (OPERACOES)", "MONITORAMENTO PERLOG (OPERACOES)", "GENTE E GESTAO PERLOG (OPERACOES)",
+            "DIVISAO PERLOG (NEGOCIOS)", "ABASTECIMENTO PERLOG (OPERACOES)", "PREVENCAO (PERLOG)"
+        ],
+
         SENHAS_FILIAIS: {
             'GG74301': { filial: '743', regional: 'MS' }, 'GG26402': { filial: '264', regional: 'SC' }, 'GG75303': { filial: '753', regional: 'MT' },
             'GG36404': { filial: '364', regional: 'DF' }, 'GG71305': { filial: '713', regional: 'SP' }, 'GG46806': { filial: '468', regional: 'MT' },
@@ -723,19 +742,6 @@
             this.showSection('home');
         },
 
-        async buscarColaborador(matricula) {
-            const nomeEl = document.getElementById('nomeColaborador');
-            const funcaoEl = document.getElementById('funcaoColaborador');
-            if (!matricula) {
-                nomeEl.value = '';
-                funcaoEl.value = '';
-                return;
-            }
-            const colaborador = this.dados.colaboradores[matricula.trim()];
-            nomeEl.value = colaborador ? colaborador.nome : 'Matrícula não encontrada.';
-            funcaoEl.value = colaborador ? (colaborador.funcao || 'Função não cadastrada') : '';
-        },
-
         async salvarPesquisa() {
             const btn = document.getElementById('btnEnviarPesquisa');
             const btnText = btn.querySelector('.btn-text');
@@ -747,15 +753,16 @@
 
             try {
                 const form = document.getElementById('formPesquisa');
-                const matricula = document.getElementById('matriculaColaborador').value.trim();
+                const filial = document.getElementById('filialPesquisa').value;
+                const secao = document.getElementById('secaoPesquisa').value;
                 
-                if (!matricula || !this.dados.colaboradores[matricula]) {
-                    throw new Error('Por favor, insira uma matrícula válida.');
+                if (!filial || !secao) {
+                    throw new Error('Por favor, selecione sua Filial e Seção.');
                 }
 
                 const pesquisaData = {
-                    matricula_colaborador: matricula,
-                    filial: this.dados.colaboradores[matricula].filial,
+                    filial: filial,
+                    secao: secao,
                     satisfacao_geral: parseInt(document.getElementById('q0_satisfacao_geral').value),
                     comentario_melhorias: document.getElementById('q10_comentario').value
                 };
@@ -786,8 +793,6 @@
                 alert('Pesquisa enviada com sucesso! Agradecemos sua participação.');
                 form.reset();
                 document.getElementById('satisfactionValue').textContent = '5';
-                document.getElementById('nomeColaborador').value = '';
-                document.getElementById('funcaoColaborador').value = '';
                 this.showSection('home');
                 this.dados.dadosCarregados = false;
             } catch (error) {
@@ -832,15 +837,16 @@
 
             const tableHtml = `<div class="overflow-x-auto"><table class="w-full text-sm text-left text-gray-500">
                 <thead class="text-xs text-gray-700 uppercase bg-gray-50"><tr>
-                    <th class="px-6 py-3">Data</th><th class="px-6 py-3">Colaborador</th>
-                    <th class="px-6 py-3">Filial</th><th class="px-6 py-3">Satisfação</th>
-                    <th class="px-6 py-3">Ações</th>
+                    <th class="px-6 py-3">ID</th><th class="px-6 py-3">Data</th>
+                    <th class="px-6 py-3">Filial</th><th class="px-6 py-3">Seção</th>
+                    <th class="px-6 py-3">Satisfação</th><th class="px-6 py-3">Ações</th>
                 </tr></thead><tbody>
                 ${pesquisas.map(p => `
                     <tr class="bg-white border-b">
+                        <td class="px-6 py-4 font-bold">${p.id}</td>
                         <td class="px-6 py-4">${new Date(p.created_at).toLocaleDateString('pt-BR')}</td>
-                        <td class="px-6 py-4">${this.dados.colaboradores[p.matricula_colaborador]?.nome || p.matricula_colaborador}</td>
                         <td class="px-6 py-4">${p.filial}</td>
+                        <td class="px-6 py-4">${p.secao || 'N/A'}</td>
                         <td class="px-6 py-4 font-bold">${p.satisfacao_geral}/10</td>
                         <td class="px-6 py-4">
                             <button class="btn btn-sm" onclick="GG.verDetalhesPesquisa(${p.id})">Detalhes</button>
@@ -887,7 +893,7 @@
                                  <canvas id="chartFilial"></canvas>
                             </div>
                             <div class="chart-container" id="chartFuncaoContainer">
-                                <canvas id="chartFuncao"></canvas>
+                                <canvas id="chartSecao"></canvas>
                             </div>
                         </div>
                     </div>
@@ -899,7 +905,7 @@
 
             this.gerarGraficoSatisfacaoGeral(pesquisasCompletas);
             this.gerarGraficoSatisfacaoPorFilial(pesquisasCompletas);
-            this.gerarGraficoSatisfacaoPorFuncao(pesquisasCompletas);
+            this.gerarGraficoSatisfacaoPorSecao(pesquisasCompletas);
             this.gerarGraficosPorPergunta(pesquisasCompletas);
         },
         
@@ -917,6 +923,7 @@
                     return acc;
                 }, {});
                 this.dados.dadosCarregados = true;
+                this.popularFiltros();
                 console.log('Todos os dados foram carregados e processados.');
             } catch(e) {
                 console.error("Falha crítica ao carregar dados:", e);
@@ -925,8 +932,26 @@
 
         async init() {
             console.log('🚀 Iniciando Sistema...');
-            Chart.register(ChartDataLabels); // Registrar plugin de labels
+            Chart.register(ChartDataLabels);
             await this.carregarTodosOsDados();
+        },
+
+        popularFiltros() {
+            const filialSelect = document.getElementById('filialPesquisa');
+            const secaoSelect = document.getElementById('secaoPesquisa');
+            
+            // Popular Filiais
+            const filiais = [...new Set(Object.values(this.dados.colaboradores).map(c => c.filial))].sort();
+            filialSelect.innerHTML = '<option value="">Selecione sua filial...</option>';
+            filiais.forEach(f => {
+                if(f) filialSelect.innerHTML += `<option value="${f}">${f}</option>`;
+            });
+
+            // Popular Seções
+            secaoSelect.innerHTML = '<option value="">Selecione sua seção...</option>';
+            this.SECOES.sort().forEach(s => {
+                secaoSelect.innerHTML += `<option value="${s}">${s}</option>`;
+            });
         },
         
         gerarGraficoSatisfacaoGeral(dados) {
@@ -960,23 +985,21 @@
             this.chartFilialInstance = new Chart(ctx, { type: 'bar', data: { labels, datasets: [{ label: 'Média de Satisfação', data: medias, backgroundColor: backgroundColors }] }, options: { scales: { x: { beginAtZero: true, max: 10 } }, indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, title: { display: true, text: 'Satisfação por Filial', font: { size: 16 } }, datalabels: { anchor: 'end', align: 'end', color: '#333', font: { weight: 'bold'} } } } });
         },
 
-        gerarGraficoSatisfacaoPorFuncao(dados) {
-            const container = document.getElementById('chartFuncaoContainer');
-            const ctx = document.getElementById('chartFuncao')?.getContext('2d');
+        gerarGraficoSatisfacaoPorSecao(dados) {
+            const container = document.getElementById('chartFuncaoContainer'); // Reutilizando o container
+            const ctx = document.getElementById('chartSecao')?.getContext('2d');
             if (!ctx) return;
             
-            const porFuncao = {};
+            const porSecao = {};
             dados.forEach(p => {
-                const colaborador = this.dados.colaboradores[p.matricula_colaborador];
-                const funcao = colaborador ? (colaborador.funcao || 'Não Identificada') : 'Não Identificada';
-                
-                if (!porFuncao[funcao]) porFuncao[funcao] = { soma: 0, total: 0 };
-                porFuncao[funcao].soma += p.satisfacao_geral;
-                porFuncao[funcao].total++;
+                const secao = p.secao || 'Não informada';
+                if (!porSecao[secao]) porSecao[secao] = { soma: 0, total: 0 };
+                porSecao[secao].soma += p.satisfacao_geral;
+                porSecao[secao].total++;
             });
 
-            const labels = Object.keys(porFuncao);
-            const medias = labels.map(f => (porFuncao[f].soma / porFuncao[f].total).toFixed(2));
+            const labels = Object.keys(porSecao);
+            const medias = labels.map(f => (porSecao[f].soma / porSecao[f].total).toFixed(2));
             const chartColors = ['#0a2342', '#3d5a80', '#5a7d9a', '#89c2d9', '#98c1d9'];
             const backgroundColors = labels.map((_, i) => chartColors[i % chartColors.length]);
             
@@ -1000,7 +1023,7 @@
                     indexAxis: 'y', 
                     responsive: true, 
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false }, title: { display: true, text: 'Satisfação por Função', font: { size: 16 } }, datalabels: { anchor: 'end', align: 'end', color: '#333', font: { weight: 'bold'} } }
+                    plugins: { legend: { display: false }, title: { display: true, text: 'Satisfação por Seção', font: { size: 16 } }, datalabels: { anchor: 'end', align: 'end', color: '#333', font: { weight: 'bold'} } }
                 } 
             });
         },
@@ -1039,11 +1062,10 @@
                 return;
             }
 
-            let html = `<h2 class="text-2xl font-bold mb-4" style="color: var(--cor-primaria);">Detalhes da Pesquisa</h2>`;
+            let html = `<h2 class="text-2xl font-bold mb-4" style="color: var(--cor-primaria);">Detalhes da Pesquisa #${pesquisa.id}</h2>`;
             html += `<div class="grid grid-cols-2 gap-4 mb-6 text-sm">
-                        <div><strong>Colaborador:</strong> ${this.dados.colaboradores[pesquisa.matricula_colaborador]?.nome || 'N/A'}</div>
-                        <div><strong>Matrícula:</strong> ${pesquisa.matricula_colaborador}</div>
                         <div><strong>Filial:</strong> ${pesquisa.filial}</div>
+                        <div><strong>Seção:</strong> ${pesquisa.secao || 'N/A'}</div>
                         <div><strong>Data:</strong> ${new Date(pesquisa.created_at).toLocaleString('pt-BR')}</div>
                      </div>`;
             
