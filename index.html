@@ -1183,16 +1183,16 @@
             
             filiais.forEach(filial => {  
                 if(filial) {
-                    const { percentual, atingiuLimite } = this.calcularPercentualFilial(filial);
+                    const { atingiuLimite } = this.calcularPercentualFilial(filial);
                     const option = document.createElement('option');
                     option.value = filial;
                     
                     if (atingiuLimite) {
-                        option.textContent = `${filial} - Meta atingida (${percentual.toFixed(1)}%)`;
+                        option.textContent = `${filial} - Meta atingida`;
                         option.disabled = true;
                         option.classList.add('completa');
                     } else {
-                        option.textContent = `${filial} (${percentual.toFixed(1)}%)`;
+                        option.textContent = filial;
                     }
                     
                     filialSelect.appendChild(option);
@@ -1396,7 +1396,7 @@
                 }).sort((a, b) => b.percentual - a.percentual);
 
                 filiaisParaRanking.forEach(item => {
-                    const corBarra = item.percentual >= 100 ? '#32ba00' : 'var(--cor-acento)';
+                    const corBarra = item.percentual >= 100 ? '#e53e3e' : 'var(--cor-acento)';
                     const statusTexto = item.percentual >= 100 ? ' - COMPLETA' : '';
                     
                     html += `
