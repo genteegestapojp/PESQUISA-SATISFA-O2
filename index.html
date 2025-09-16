@@ -262,6 +262,18 @@
             border-color: var(--cor-neutra);  
             color: var(--cor-escura);  
         }  
+
+        .alert-warning {
+            background: rgba(255, 193, 7, 0.1);
+            border-color: #ffc107;
+            color: #856404;
+        }
+
+        .alert-danger {
+            background: rgba(220, 53, 69, 0.1);
+            border-color: #dc3545;
+            color: #721c24;
+        }
         
         .spinner {  
             border: 4px solid #f3f3f3;  
@@ -373,6 +385,17 @@
             border: none;
         }
 
+        /* Estilos para opções desabilitadas */
+        .form-group select option:disabled {
+            color: #999;
+            font-style: italic;
+        }
+
+        .form-group select option.completa {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+
     </style>  
 </head>  
 <body>  
@@ -413,6 +436,8 @@
         <section id="pesquisa" class="section">  
             <h2><i class="fas fa-edit"></i> Nível de Satisfação dos Funcionários</h2>  
             
+            <div id="alertaLimitePesquisa" style="display: none;"></div>
+            
             <form id="formPesquisa">  
                 <!-- Identificação do Colaborador -->  
                 <div class="question-card">  
@@ -420,7 +445,7 @@
                     <div class="grid md:grid-cols-2 gap-4">  
                         <div class="form-group">  
                             <label for="filialPesquisa" class="font-semibold">Sua Filial *</label>  
-                            <select id="filialPesquisa" required>  
+                            <select id="filialPesquisa" required onchange="GG.verificarLimiteFilial()">  
                                 <option value="">Carregando filiais...</option>  
                             </select>  
                         </div>  
@@ -800,6 +825,81 @@
             this.showSection('home');  
         },  
 
+        // Nova função para verificar se uma filial atingiu o limite
+        verificarLimiteFilial() {
+            const filialSelecionada = document.getElementById('filialPesquisa').value;
+            const alertaContainer = document.getElementById('alertaLimitePesquisa');
+            
+            if (!filialSelecionada) {
+                alertaContainer.style.display = 'none';
+                return;
+            }
+
+            const { percentual, atingiuLimite } = this.calcularPercentualFilial(filialSelecionada);
+            
+            if (atingiuLimite) {
+                alertaContainer.innerHTML = `
+                    <div class="alert alert-danger">
+                        <h4 class="font-bold text-lg mb-2"><i class="fas fa-exclamation-triangle"></i> Meta Atingida!</h4>
+                        <p>A <strong>Filial ${filialSelecionada}</strong> já atingiu 100% da meta de respostas (${percentual.toFixed(1)}%). Não é possível enviar mais pesquisas para esta filial.</p>
+                    </div>
+                `;
+                alertaContainer.style.display = 'block';
+                
+                // Desabilita o formulário
+                this.bloquearFormulario(true);
+                
+            } else if (percentual >= 90) {
+                alertaContainer.innerHTML = `
+                    <div class="alert alert-warning">
+                        <h4 class="font-bold text-lg mb-2"><i class="fas fa-exclamation-circle"></i> Atenção!</h4>
+                        <p>A <strong>Filial ${filialSelecionada}</strong> já possui ${percentual.toFixed(1)}% de respostas. Restam poucas vagas para atingir a meta de 100%.</p>
+                    </div>
+                `;
+                alertaContainer.style.display = 'block';
+                
+                // Reabilita o formulário caso estava desabilitado
+                this.bloquearFormulario(false);
+                
+            } else {
+                alertaContainer.style.display = 'none';
+                // Reabilita o formulário caso estava desabilitado
+                this.bloquearFormulario(false);
+            }
+        },
+
+        // Nova função para calcular o percentual de uma filial
+        calcularPercentualFilial(filial) {
+            const quadro = this.dados.quadroPorFilial[filial] || 0;
+            const respostas = this.dados.pesquisas.filter(p => p.filial === filial).length;
+            const percentual = quadro > 0 ? (respostas / quadro) * 100 : 0;
+            const atingiuLimite = percentual >= 100;
+            
+            return { quadro, respostas, percentual, atingiuLimite };
+        },
+
+        // Nova função para bloquear/desbloquear o formulário
+        bloquearFormulario(bloquear) {
+            const form = document.getElementById('formPesquisa');
+            const btnEnviar = document.getElementById('btnEnviarPesquisa');
+            const secaoSelect = document.getElementById('secaoPesquisa');
+            
+            if (bloquear) {
+                // Desabilita todos os inputs e selects exceto a filial
+                form.querySelectorAll('input:not([readonly]), select:not(#filialPesquisa), textarea').forEach(element => {
+                    element.disabled = true;
+                });
+                btnEnviar.disabled = true;
+                secaoSelect.disabled = true;
+            } else {
+                // Reabilita todos os elementos
+                form.querySelectorAll('input, select, textarea').forEach(element => {
+                    element.disabled = false;
+                });
+                btnEnviar.disabled = false;
+            }
+        },
+
         async salvarPesquisa() {  
             const btn = document.getElementById('btnEnviarPesquisa');  
             const btnText = btn.querySelector('.btn-text');  
@@ -817,6 +917,12 @@
                 if (!filial || !secao) {  
                     throw new Error('Por favor, selecione sua Filial e Seção.');  
                 }  
+
+                // Verifica se a filial atingiu o limite ANTES de salvar
+                const { atingiuLimite, percentual } = this.calcularPercentualFilial(filial);
+                if (atingiuLimite) {
+                    throw new Error(`A Filial ${filial} já atingiu 100% da meta de respostas (${percentual.toFixed(1)}%). Não é possível enviar mais pesquisas para esta filial.`);
+                }
 
                 const pesquisaData = {  
                     filial: filial,  
@@ -851,8 +957,13 @@
                 alert('Pesquisa enviada com sucesso! Agradecemos sua participação.');  
                 form.reset();  
                 document.getElementById('satisfactionValue').textContent = '5';  
+                document.getElementById('alertaLimitePesquisa').style.display = 'none';
                 this.showSection('home');  
                 this.dados.dadosCarregados = false;  
+                
+                // Recarrega os dados para atualizar os percentuais
+                await this.carregarTodosOsDados();
+                
             } catch (error) {  
                 console.error('Erro ao salvar pesquisa:', error);  
                 alert(`Ocorreu um erro: ${error.message}`);  
@@ -1069,8 +1180,23 @@
             
             const filiais = [...new Set(Object.values(this.dados.colaboradores).map(c => c.filial))].sort();  
             filialSelect.innerHTML = '<option value="">Selecione sua filial...</option>';  
-            filiais.forEach(f => {  
-                if(f) filialSelect.innerHTML += `<option value="${f}">${f}</option>`;  
+            
+            filiais.forEach(filial => {  
+                if(filial) {
+                    const { percentual, atingiuLimite } = this.calcularPercentualFilial(filial);
+                    const option = document.createElement('option');
+                    option.value = filial;
+                    
+                    if (atingiuLimite) {
+                        option.textContent = `${filial} - Meta atingida (${percentual.toFixed(1)}%)`;
+                        option.disabled = true;
+                        option.classList.add('completa');
+                    } else {
+                        option.textContent = `${filial} (${percentual.toFixed(1)}%)`;
+                    }
+                    
+                    filialSelect.appendChild(option);
+                }
             });  
 
             secaoSelect.innerHTML = '<option value="">Selecione sua seção...</option>';  
@@ -1270,15 +1396,18 @@
                 }).sort((a, b) => b.percentual - a.percentual);
 
                 filiaisParaRanking.forEach(item => {
+                    const corBarra = item.percentual >= 100 ? '#e53e3e' : 'var(--cor-acento)';
+                    const statusTexto = item.percentual >= 100 ? ' - COMPLETA' : '';
+                    
                     html += `
                     <div class="progress-container">
                         <div class="progress-label">
-                            <span>Filial ${item.filial}</span>
+                            <span>Filial ${item.filial}${statusTexto}</span>
                             <span>${item.respostas} de ${item.quadro} (${item.percentual.toFixed(1)}%)</span>
                         </div>
                         <div class="progress-bar-bg">
                             <div class="goal-line"></div>
-                            <div class="progress-bar-fill" style="width: ${item.percentual.toFixed(1)}%;"></div>
+                            <div class="progress-bar-fill" style="width: ${Math.min(item.percentual, 100).toFixed(1)}%; background-color: ${corBarra};"></div>
                         </div>
                     </div>`;
                 });
@@ -1288,16 +1417,19 @@
                 const respostas = dados.length;
                 
                 if (quadro > 0) {
-                    const percentual = ((respostas / quadro) * 100).toFixed(1);
+                    const percentual = ((respostas / quadro) * 100);
+                    const corBarra = percentual >= 100 ? '#e53e3e' : 'var(--cor-acento)';
+                    const statusTexto = percentual >= 100 ? ' - COMPLETA' : '';
+                    
                     html += `
                     <div class="progress-container">
                         <div class="progress-label">
-                            <span><strong>FILIAL ${filialSelecionada}</strong></span>
-                            <span>${respostas} de ${quadro} (${percentual}%)</span>
+                            <span><strong>FILIAL ${filialSelecionada}${statusTexto}</strong></span>
+                            <span>${respostas} de ${quadro} (${percentual.toFixed(1)}%)</span>
                         </div>
                         <div class="progress-bar-bg">
                             <div class="goal-line"></div>
-                            <div class="progress-bar-fill" style="width: ${percentual}%;"></div>
+                            <div class="progress-bar-fill" style="width: ${Math.min(percentual, 100).toFixed(1)}%; background-color: ${corBarra};"></div>
                         </div>
                     </div>`;
                 } else {
@@ -1373,4 +1505,3 @@
     </script>  
 </body>  
 </html>
-
