@@ -708,6 +708,11 @@
             </div>
 
             <div id="relatoriosComentarios" class="relatorios-sub-tab hidden">
+                <!-- Filtro de Filial para a aba de comentários -->
+                <div class="filter-bar">
+                    <label for="filtroFilialComentarios">Filtrar por Filial:</label>
+                    <select id="filtroFilialComentarios" onchange="GG.aplicarFiltroComentarios()"></select>
+                </div>
                 <h3 class="text-xl font-bold text-center mb-4 text-gray-800">Nuvem de Comentários</h3>
                 <div id="wordCloudContainer" class="word-cloud-container"></div>
                 
@@ -729,6 +734,19 @@
         </div>
     </footer>
     
+    <!-- Modal de Alerta Customizado -->
+    <div id="customAlertModal" class="modal-overlay" onclick="GG.hideCustomAlert()">
+        <div class="modal-content !max-w-md">
+            <button class="modal-close" onclick="GG.hideCustomAlert()">&times;</button>
+            <div class="text-center">
+                <div class="text-4xl mb-4" id="alertIcon"></div>
+                <h3 class="text-xl font-bold mb-4" id="alertTitle"></h3>
+                <p id="alertMessage"></p>
+                <button class="btn btn-success mt-6" onclick="GG.hideCustomAlert()">OK</button>
+            </div>
+        </div>
+    </div>
+
     <div id="modalDetalhes" class="modal-overlay" onclick="GG.fecharModalDetalhes(event)">
         <div class="modal-content">
             <button class="modal-close" onclick="GG.fecharModalDetalhes()">&times;</button>
@@ -823,7 +841,7 @@
                     }
 
                 } catch(e) {
-                    alert(`Falha ao carregar dados da tabela "${tabela}". Verifique se a tabela existe no Supabase e se as permissões (RLS) estão corretas.`);
+                    this.showCustomAlert('error', 'Erro de Conexão', `Falha ao carregar dados da tabela "${tabela}". Verifique se a tabela existe no Supabase e se as permissões (RLS) estão corretas.`);
                     throw e;
                 }
             }
@@ -837,7 +855,10 @@
                 headers: { 'apikey': this.SUPABASE_KEY, 'Authorization': `Bearer ${this.SUPABASE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
                 body: JSON.stringify(dados)
             });
-            if (!response.ok) throw new Error(await response.text());
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText);
+            }
             return await response.json();
         },
         
@@ -866,7 +887,7 @@
         validarSenha(tipo) {
             const senhaEl = document.getElementById(`senha${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`);
             const senha = senhaEl.value.trim().toUpperCase();
-            if (!senha) return alert('Por favor, digite uma senha.');
+            if (!senha) return this.showCustomAlert('warning', 'Atenção', 'Por favor, digite uma senha.');
 
             let acessoConcedido = false;
             if (this.SENHAS_ESPECIAIS[senha]) {
@@ -882,7 +903,7 @@
                 this.showSection(tipo);
                 senhaEl.value = '';
             } else {
-                alert('Senha inválida!');
+                this.showCustomAlert('error', 'Acesso Negado', 'Senha inválida!');
             }
         },
         
@@ -899,6 +920,42 @@
             document.querySelectorAll('.access-status').forEach(el => el.style.display = 'none');
             this.showSection('home');
         },
+        
+        // Modal customizado para alertas
+        showCustomAlert(type, title, message) {
+            const modal = document.getElementById('customAlertModal');
+            const iconEl = document.getElementById('alertIcon');
+            const titleEl = document.getElementById('alertTitle');
+            const messageEl = document.getElementById('alertMessage');
+            
+            let iconHtml = '';
+            let iconColor = '';
+            
+            switch(type) {
+                case 'success':
+                    iconHtml = '<i class="fas fa-check-circle" style="color: #48bb78;"></i>';
+                    break;
+                case 'warning':
+                    iconHtml = '<i class="fas fa-exclamation-triangle" style="color: #ecc94b;"></i>';
+                    break;
+                case 'error':
+                    iconHtml = '<i class="fas fa-times-circle" style="color: #f56565;"></i>';
+                    break;
+                default:
+                    iconHtml = '<i class="fas fa-info-circle" style="color: #4299e1;"></i>';
+            }
+            
+            iconEl.innerHTML = iconHtml;
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+            modal.style.display = 'flex';
+        },
+        
+        hideCustomAlert() {
+            const modal = document.getElementById('customAlertModal');
+            modal.style.display = 'none';
+        },
+
 
         // Nova função para verificar se uma filial atingiu o limite
         verificarLimiteFilial() {
@@ -1010,7 +1067,7 @@
                 if (!resultadoPesquisa || resultadoPesquisa.length === 0) {
                     throw new Error('Não foi possível obter o ID da pesquisa salva.');
                 }
-                const pesquisaId = resultadoPesultadoPesquisa[0].id;
+                const pesquisaId = resultadoPesquisa[0].id;
                 
                 const respostas = [];
                 for (const key in this.DEFINICAO_PERGUNTAS) {
@@ -1029,7 +1086,7 @@
                 }
 
                 await this.inserirNoSupabase('pesquisa_respostas', respostas);
-                alert('Pesquisa enviada com sucesso! Agradecemos sua participação.');
+                this.showCustomAlert('success', 'Sucesso!', 'Pesquisa enviada com sucesso! Agradecemos sua participação.');
                 form.reset();
                 document.getElementById('satisfactionValue').textContent = '5';
                 document.getElementById('alertaLimitePesquisa').style.display = 'none';
@@ -1041,7 +1098,7 @@
                 
             } catch (error) {
                 console.error('Erro ao salvar pesquisa:', error);
-                alert(`Ocorreu um erro: ${error.message}`);
+                this.showCustomAlert('error', 'Erro', `Ocorreu um erro: ${error.message}`);
             } finally {
                 btn.disabled = false;
                 btnText.style.display = 'inline-block';
@@ -1523,7 +1580,7 @@
             const respostas = this.dados.respostas.filter(r => r.pesquisa_id === pesquisaId);
 
             if (!pesquisa) {
-                alert('Erro: Pesquisa não encontrada.');
+                this.showCustomAlert('error', 'Erro', 'Pesquisa não encontrada.');
                 return;
             }
 
@@ -1586,23 +1643,52 @@
             }
 
             if (tabId === 'comentarios') {
-                this.gerarNuvemDeComentarios();
+                this.popularFiltroComentarios();
+                this.aplicarFiltroComentarios();
             } else if (tabId === 'charts') {
                 this.gerarRelatorios();
             }
         },
 
-        gerarNuvemDeComentarios() {
+        popularFiltroComentarios() {
+            const filtroSelect = document.getElementById('filtroFilialComentarios');
+            const filiaisUnicas = [...new Set(this.dados.pesquisas.map(p => p.filial))].sort();
+
+            filtroSelect.innerHTML = '<option value="todas">Todas as Filiais</option>';
+            filiaisUnicas.forEach(f => {
+                 filtroSelect.innerHTML += `<option value="${f}">${f}</option>`;
+            });
+
+            if (this.acesso.tipo === 'filial') {
+                filtroSelect.value = this.acesso.filial;
+                filtroSelect.disabled = true;
+            } else {
+                filtroSelect.disabled = false;
+            }
+        },
+
+        aplicarFiltroComentarios() {
+            const selectedFilial = document.getElementById('filtroFilialComentarios').value;
+            let comentariosFiltrados = this.dados.pesquisas;
+            
+            if (selectedFilial !== 'todas') {
+                 comentariosFiltrados = comentariosFiltrados.filter(p => p.filial === selectedFilial);
+            }
+
+            this.gerarNuvemDeComentarios(comentariosFiltrados);
+        },
+
+        gerarNuvemDeComentarios(dados) {
             const container = document.getElementById('wordCloudContainer');
             container.innerHTML = ''; // Limpa a nuvem anterior
 
-            const comentarios = this.dados.pesquisas
+            const comentarios = dados
                 .map(p => p.comentario_melhorias)
                 .filter(c => c && c.trim() !== '');
 
             this.mostrarComentarios(comentarios); // Mostra todos os comentários inicialmente
             if (comentarios.length === 0) {
-                container.innerHTML = `<p class="text-center p-8">Nenhum comentário encontrado.</p>`;
+                container.innerHTML = `<p class="text-center p-8">Nenhum comentário encontrado para esta filial.</p>`;
                 return;
             }
 
@@ -1765,12 +1851,15 @@
             requestAnimationFrame(() => this.animateBubbles(bubbles));
         },
 
-        mostrarComentarios(comentarios) {
+        mostrarComentarios(comentarios, palavraChave = null) {
             const commentList = document.getElementById('commentList');
             const commentsTitle = document.getElementById('commentsTitle');
             const clearBtn = document.getElementById('clearFilterBtn');
 
-            commentsTitle.textContent = `Comentários (${comentarios.length})`;
+            commentsTitle.innerHTML = palavraChave ? 
+                `Comentários com a palavra "<strong>${palavraChave}</strong>" (<span id="commentCount">${comentarios.length}</span>)` :
+                `Todos os Comentários (<span id="commentCount">${comentarios.length}</span>)`;
+
             commentList.innerHTML = '';
             
             if (comentarios.length === 0) {
@@ -1782,31 +1871,43 @@
             comentarios.forEach(comentario => {
                 const commentDiv = document.createElement('div');
                 commentDiv.className = 'bg-white p-4 rounded-md shadow-sm border border-gray-200';
-                commentDiv.innerHTML = `<p class="text-sm font-light leading-relaxed">${comentario}</p>`;
+                let displayedComment = comentario;
+                if (palavraChave) {
+                     const regex = new RegExp(`(${palavraChave})`, 'gi');
+                     displayedComment = comentario.replace(regex, `<strong class="text-blue-600">$&</strong>`);
+                }
+
+                commentDiv.innerHTML = `<p class="text-sm font-light leading-relaxed">${displayedComment}</p>`;
                 commentList.appendChild(commentDiv);
             });
-            clearBtn.classList.add('hidden');
+            clearBtn.classList.toggle('hidden', !palavraChave);
         },
 
         filtrarComentarios(word) {
-            const comentariosCompletos = this.dados.pesquisas
+            const selectedFilial = document.getElementById('filtroFilialComentarios').value;
+            let comentariosFiltrados = this.dados.pesquisas;
+            
+            if (selectedFilial !== 'todas') {
+                comentariosFiltrados = comentariosFiltrados.filter(p => p.filial === selectedFilial);
+            }
+            
+            const comentariosCompletos = comentariosFiltrados
                 .filter(p => p.comentario_melhorias && p.comentario_melhorias.toLowerCase().includes(word.toLowerCase()));
 
-            const comentariosFiltrados = comentariosCompletos.map(p => p.comentario_melhorias);
-            this.mostrarComentarios(comentariosFiltrados);
-
-            const commentsTitle = document.getElementById('commentsTitle');
-            commentsTitle.innerHTML = `Comentários com a palavra "<strong>${word}</strong>" (<span id="commentCount">${comentariosFiltrados.length}</span>)`;
-            document.getElementById('clearFilterBtn').classList.remove('hidden');
+            const comentariosParaExibir = comentariosCompletos.map(p => p.comentario_melhorias);
+            this.mostrarComentarios(comentariosParaExibir, word);
         },
 
         clearCommentFilter() {
-            const comentarios = this.dados.pesquisas
-                .map(p => p.comentario_melhorias)
-                .filter(c => c && c.trim() !== '');
-            this.mostrarComentarios(comentarios);
-            document.getElementById('commentsTitle').innerHTML = `Todos os Comentários (<span id="commentCount">${comentarios.length}</span>)`;
-            document.getElementById('clearFilterBtn').classList.add('hidden');
+            const selectedFilial = document.getElementById('filtroFilialComentarios').value;
+            let comentariosFiltrados = this.dados.pesquisas;
+
+            if (selectedFilial !== 'todas') {
+                comentariosFiltrados = comentariosFiltrados.filter(p => p.filial === selectedFilial);
+            }
+            
+            const comentariosParaExibir = comentariosFiltrados.map(p => p.comentario_melhorias);
+            this.mostrarComentarios(comentariosParaExibir);
         }
     };
 
